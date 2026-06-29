@@ -8,6 +8,7 @@ The Sales module manages customer orders, dispatch, invoicing, pricing, and cred
 - Create quotations, sales orders, delivery challans, invoices, and returns.
 - Sell rice by grade, brand, packing size, lot, and warehouse availability.
 - Support by-product sales for husk, bran, and broken rice.
+- Link outbound vehicle, transporter, delivery challan, freight, and weighment details.
 - Record customer receipt status as full paid, paid over, or paid under.
 - Trigger receivable, tax, and revenue entries in Finance.
 
@@ -19,6 +20,7 @@ flowchart LR
     SO --> CREDIT[Credit Check]
     CREDIT --> RESERVE[Inventory Reservation]
     RESERVE --> DISPATCH[Dispatch]
+    DISPATCH --> LOG[Weighbridge & Logistics]
     DISPATCH --> INV[Sales Invoice]
     INV --> FIN[Accounts Receivable]
     DISPATCH --> TRACE[Lot Dispatch Trace]
@@ -30,6 +32,7 @@ flowchart LR
 - Customer, route, sales person, credit limit, and payment terms.
 - Rice grade, brand, packing type, rate, discount, tax, and freight.
 - Order, dispatch, invoice, return, and receipt references.
+- Vehicle, transporter, delivery challan, outbound weight, and freight references.
 - Receipt amount, invoice balance, overpayment credit, and underpayment balance.
 - Customer-wise and product-wise sales history.
 

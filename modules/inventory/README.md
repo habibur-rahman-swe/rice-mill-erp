@@ -1,12 +1,13 @@
 # Inventory & Warehouse Management
 
-The Inventory module controls physical and valued stock across raw paddy, finished rice, by-products, packing material, and consumables. It supports lot-wise and godown-wise visibility.
+The Inventory module controls physical and valued stock across raw paddy, finished rice, by-products, packing material, spare parts, and consumables. It supports lot-wise and godown-wise visibility.
 
 ## Responsibilities
 
 - Track stock by item, lot, godown, grade, packing type, and status.
 - Receive paddy from Procurement and finished goods from Production.
 - Issue paddy, packaging, and consumables to Production.
+- Issue spare parts and maintenance consumables to Maintenance & Utilities.
 - Manage transfers between godowns, mills, and storage locations.
 - Maintain valuation for raw material, work in process, finished goods, and by-products.
 
@@ -20,9 +21,11 @@ flowchart LR
     PROD --> BYP[By-Product Stock]
     FG --> SALES[Sales Dispatch]
     BYP --> SALES
+    SPARE[Spare Parts Stock] --> MAINT[Maintenance Issue]
     RAW --> FIN[Inventory Valuation]
     FG --> FIN
     BYP --> FIN
+    SPARE --> FIN
 ```
 
 ## Key Data
@@ -37,5 +40,4 @@ flowchart LR
 - Stock ledger and stock statement.
 - Lot-wise and godown-wise availability.
 - Inventory valuation for Finance.
-- Reorder and shortage signals for Procurement and Production.
-
+- Reorder and shortage signals for Procurement, Production, and Maintenance.

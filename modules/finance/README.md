@@ -9,6 +9,7 @@ The Finance module converts ERP operations into accounting records. It manages p
 - Track settlement status for full payments, overpayments, and underpayments.
 - Maintain chart of accounts, journals, ledgers, cash, and bank records.
 - Post inventory valuation, production costing, and cost of goods sold.
+- Account for freight, loading, unloading, maintenance, utility, payroll, and spare parts costs.
 - Support tax reporting, deductions, TDS, GST/VAT-style taxes, and statutory reports.
 
 ## Relationships
@@ -19,10 +20,16 @@ flowchart LR
     SALES[Sales] --> AR[Accounts Receivable]
     INV[Inventory] --> VAL[Inventory Valuation]
     PROD[Production] --> COST[Production Costing]
+    LOG[Weighbridge & Logistics] --> FREIGHT[Freight & Transport Cost]
+    MAINT[Maintenance & Utilities] --> MCOST[Maintenance & Utility Cost]
+    HR[HR, Labor & Payroll] --> PAYROLL[Payroll & Labor Cost]
     AP --> GL[General Ledger]
     AR --> GL
     VAL --> GL
     COST --> GL
+    FREIGHT --> GL
+    MCOST --> GL
+    PAYROLL --> GL
     GL --> PNL[Profit & Loss]
     GL --> MIS[Financial Reports]
 ```
@@ -34,6 +41,7 @@ flowchart LR
 - Payment settlement status, paid amount, balance amount, excess amount, and short amount.
 - Tax setup, deductions, freight, brokerage, and other charges.
 - Inventory valuation, production cost, revenue, and expense accounts.
+- Maintenance cost, utility cost, spare parts issue, payroll, labor cost, and transport settlement references.
 
 ## Payment Settlement Cases
 

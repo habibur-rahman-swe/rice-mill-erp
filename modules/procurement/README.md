@@ -7,6 +7,7 @@ The Procurement module manages the intake of raw paddy from farmers, suppliers, 
 - Maintain supplier, farmer, agent, and broker profiles.
 - Create purchase orders, gate entries, weighment slips, and purchase receipts.
 - Capture paddy variety, lot number, moisture, gross weight, tare weight, net weight, and accepted quantity.
+- Link inbound vehicle, transporter, challan, and freight details from Weighbridge & Logistics.
 - Route received paddy through quality checks before inventory acceptance.
 - Record supplier payment status as full paid, paid over, or paid under.
 - Trigger payable entries for Finance after purchase confirmation.
@@ -16,7 +17,8 @@ The Procurement module manages the intake of raw paddy from farmers, suppliers, 
 ```mermaid
 flowchart LR
     SUP[Supplier / Farmer / Agent] --> PO[Purchase Order]
-    PO --> GATE[Gate Entry & Weighment]
+    PO --> LOG[Weighbridge & Logistics]
+    LOG --> GATE[Gate Entry & Weighment]
     GATE --> QC[Quality Control]
     QC --> REC[Purchase Receipt]
     REC --> INV[Inventory Stock]
@@ -30,6 +32,7 @@ flowchart LR
 - Paddy variety, season, crop year, origin, and lot.
 - Purchase order, receipt, weighment, and quality references.
 - Rate, deductions, taxes, transport cost, and payable amount.
+- Vehicle, transporter, freight, gate pass, and challan references.
 - Payment amount, remaining payable, overpayment advance, and underpayment balance.
 
 ## Outputs
