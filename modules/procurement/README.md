@@ -8,6 +8,7 @@ The Procurement module manages the intake of raw paddy from farmers, suppliers, 
 - Create purchase orders, gate entries, weighment slips, and purchase receipts.
 - Capture paddy variety, lot number, moisture, gross weight, tare weight, net weight, and accepted quantity.
 - Route received paddy through quality checks before inventory acceptance.
+- Record supplier payment status as full paid, paid over, or paid under.
 - Trigger payable entries for Finance after purchase confirmation.
 
 ## Relationships
@@ -29,11 +30,12 @@ flowchart LR
 - Paddy variety, season, crop year, origin, and lot.
 - Purchase order, receipt, weighment, and quality references.
 - Rate, deductions, taxes, transport cost, and payable amount.
+- Payment amount, remaining payable, overpayment advance, and underpayment balance.
 
 ## Outputs
 
 - Accepted paddy stock for Inventory.
 - Supplier payable voucher for Finance.
+- Supplier payment settlement status for Finance.
 - Batch origin record for Traceability.
 - Procurement performance data for Reporting.
-
