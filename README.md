@@ -106,6 +106,72 @@ flowchart LR
 | Maintenance & Utilities | Machine maintenance, downtime, spare parts, energy, fuel, and utility cost tracking. | [modules/maintenance-utilities/README.md](modules/maintenance-utilities/README.md) |
 | HR, Labor & Payroll | Employees, labor contractors, shifts, attendance, wages, payroll, and labor costing. | [modules/hr-payroll/README.md](modules/hr-payroll/README.md) |
 
+## Development Hierarchy
+
+For a solo developer, build the ERP in layers. Start with the modules that create reusable data and stock movement, then add production, sales, finance, and finally operational support modules.
+
+```mermaid
+flowchart TD
+    L1[Layer 1: Foundation] --> L2[Layer 2: Core Stock Flow]
+    L2 --> L3[Layer 3: Milling Operations]
+    L3 --> L4[Layer 4: Commercial Flow]
+    L4 --> L5[Layer 5: Finance & Reports]
+    L5 --> L6[Layer 6: Controls & Advanced Operations]
+
+    L1 --> MDM[Master Data & Configuration]
+    L1 --> UAM_MIN[Basic User Access]
+
+    L2 --> INV[Inventory & Warehouse]
+    L2 --> PROC[Procurement & Purchase]
+    L2 --> QC_MIN[Basic Quality Checks]
+
+    L3 --> PROD[Production & Manufacturing]
+    L3 --> TRACE[Batch, Lot & Traceability]
+    L3 --> BYP[By-Product Management]
+
+    L4 --> SALES[Sales & Customer Management]
+    L4 --> PAY_STATUS[Payment Status: Full Paid, Paid Over, Paid Under]
+
+    L5 --> FIN[Financial Management]
+    L5 --> MIS[Reporting & Analytics]
+
+    L6 --> LOG[Weighbridge & Logistics]
+    L6 --> MAINT[Maintenance & Utilities]
+    L6 --> HR[HR, Labor & Payroll]
+    L6 --> SITE[Multi-Site Operations]
+    L6 --> UAM_FULL[Full Workflow & Approvals]
+```
+
+### Recommended Build Order
+
+| Priority | Build First | Why It Comes Here |
+| --- | --- | --- |
+| 1 | Master Data & Configuration | All modules depend on items, parties, grades, units, godowns, tax rules, and document settings. |
+| 2 | Inventory & Warehouse | Stock ledger and lot-wise inventory are the backbone of a rice mill ERP. |
+| 3 | Procurement & Purchase | Creates raw paddy stock and supplier payable data. |
+| 4 | Basic Quality Control | Adds moisture, grade, impurity, and acceptance checks before paddy enters stock. |
+| 5 | Production & Manufacturing | Converts paddy into finished rice, broken rice, husk, bran, and process loss. |
+| 6 | Traceability & By-Product Management | Connects input lots to output lots and captures secondary revenue streams. |
+| 7 | Sales & Customer Management | Dispatches finished goods and creates invoices and receivables. |
+| 8 | Basic Finance | Handles supplier payables, customer receivables, and payment settlement status. |
+| 9 | Reporting & Analytics | Becomes useful after purchase, stock, production, sales, and finance data exist. |
+| 10 | Weighbridge, HR, Maintenance, Multi-Site, Full Workflow | Add these after the MVP is stable, unless they are urgent for the mill's daily operation. |
+
+### Solo Developer MVP
+
+The first working version should focus on one complete business loop:
+
+```text
+Master Data
+  -> Paddy Purchase
+  -> Inventory Stock
+  -> Production Batch
+  -> Finished Rice and By-Product Stock
+  -> Sales Invoice
+  -> Payment Settlement
+  -> Basic Reports
+```
+
 ## Integration Principles
 
 - Every stock movement must carry lot, godown, item, quantity, and valuation references.
