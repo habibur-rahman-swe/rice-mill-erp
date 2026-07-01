@@ -58,6 +58,110 @@ flowchart TB
     RPT -.registers.-> EUREKA
 ```
 
+## ERP Use Case Diagram
+
+This diagram shows the main ERP actors and the high-level use cases they perform through the React app and backend services. It also shows the JWT token use cases handled by the Gateway and Identity & Access Service.
+
+```mermaid
+flowchart LR
+    subgraph Actors
+        ADMIN[Admin]
+        PROC_USER[Procurement User]
+        INV_USER[Inventory User]
+        PROD_USER[Production User]
+        SALES_USER[Sales User]
+        FIN_USER[Finance User]
+        MANAGER[Manager / Owner]
+        REPORT_USER[Report Viewer]
+        AUTH_USER[Authenticated User]
+        GATEWAY[Spring Cloud Gateway]
+        IDENTITY[Identity & Access Service]
+    end
+
+    subgraph ERP[Rice Mill ERP]
+        LOGIN((Login))
+        LOGOUT((Logout))
+        ISSUE_JWT((Issue JWT Access Token))
+        REFRESH_JWT((Refresh JWT Token))
+        VALIDATE_JWT((Validate JWT Token))
+        ROUTE_AUTH((Check Route Authorization))
+        USER_ROLE((Manage Users, Roles & Permissions))
+        MASTER((Manage Master Data))
+        PURCHASE((Purchase Paddy))
+        QC((Record Quality Checks))
+        STOCK((Manage Stock & Lots))
+        PRODUCTION((Run Production Batch))
+        BYPRODUCT((Track By-Products))
+        SALES((Create Sales & Dispatch))
+        PAYMENT((Settle Payments))
+        REPORTS((View Reports & Dashboards))
+        APPROVAL((Approve Sensitive Actions))
+        AUDIT((Review Audit Trail))
+    end
+
+    ADMIN --> LOGIN
+    ADMIN --> USER_ROLE
+    ADMIN --> MASTER
+    ADMIN --> AUDIT
+
+    PROC_USER --> LOGIN
+    PROC_USER --> PURCHASE
+    PROC_USER --> QC
+
+    INV_USER --> LOGIN
+    INV_USER --> STOCK
+
+    PROD_USER --> LOGIN
+    PROD_USER --> PRODUCTION
+    PROD_USER --> BYPRODUCT
+    PROD_USER --> QC
+
+    SALES_USER --> LOGIN
+    SALES_USER --> SALES
+
+    FIN_USER --> LOGIN
+    FIN_USER --> PAYMENT
+
+    MANAGER --> LOGIN
+    MANAGER --> APPROVAL
+    MANAGER --> REPORTS
+    MANAGER --> AUDIT
+
+    REPORT_USER --> LOGIN
+    REPORT_USER --> REPORTS
+    AUTH_USER --> REFRESH_JWT
+    AUTH_USER --> LOGOUT
+
+    LOGIN -.requests token.-> ISSUE_JWT
+    LOGOUT -.revokes refresh token/session.-> IDENTITY
+    GATEWAY -.routes auth request.-> IDENTITY
+    IDENTITY --> ISSUE_JWT
+    IDENTITY --> REFRESH_JWT
+    GATEWAY --> VALIDATE_JWT
+    GATEWAY --> ROUTE_AUTH
+    VALIDATE_JWT -.required before protected use cases.-> ROUTE_AUTH
+    ROUTE_AUTH -.allows access to.-> MASTER
+    ROUTE_AUTH -.allows access to.-> PURCHASE
+    ROUTE_AUTH -.allows access to.-> QC
+    ROUTE_AUTH -.allows access to.-> STOCK
+    ROUTE_AUTH -.allows access to.-> PRODUCTION
+    ROUTE_AUTH -.allows access to.-> SALES
+    ROUTE_AUTH -.allows access to.-> PAYMENT
+    ROUTE_AUTH -.allows access to.-> REPORTS
+
+    PURCHASE -.creates stock.-> STOCK
+    QC -.accepts or rejects.-> STOCK
+    STOCK -.issues paddy.-> PRODUCTION
+    PRODUCTION -.creates rice.-> STOCK
+    PRODUCTION -.creates husk, bran, broken rice.-> BYPRODUCT
+    STOCK -.dispatches goods.-> SALES
+    SALES -.creates receivable.-> PAYMENT
+    PURCHASE -.creates payable.-> PAYMENT
+    PAYMENT -.supports.-> REPORTS
+    STOCK -.supports.-> REPORTS
+    PRODUCTION -.supports yield analysis.-> REPORTS
+```
+
 ## Main Components
 
 ### React Frontend
@@ -70,7 +174,7 @@ Responsibilities:
 - Store short-lived access tokens in a secure client-side pattern.
 - Call backend APIs through the gateway only.
 - Avoid direct calls to individual microservices.
-- Use route-level permissions based on the authenticated user's roles.
+- Use roles and permissions to hide unavailable screens and actions, while backend services still enforce security.
 
 ### External Load Balancer / Reverse Proxy
 
@@ -114,6 +218,14 @@ Example route ownership:
 | `/api/sales/**` | Sales Service |
 | `/api/finance/**` | Finance Service |
 | `/api/reports/**` | Reporting Service |
+
+Authentication endpoint examples:
+
+| API Path | Target Service | Token Requirement |
+| --- | --- | --- |
+| `POST /api/auth/login` | Identity & Access Service | No access token required. |
+| `POST /api/auth/refresh` | Identity & Access Service | Valid refresh token required. |
+| `POST /api/auth/logout` | Identity & Access Service | Valid access token or refresh token required. |
 
 ### Eureka Service Registry
 
@@ -175,6 +287,8 @@ Later services:
 
 ## Request Flow
 
+All browser requests enter through the gateway. Login and refresh-token requests are routed to the Identity & Access Service. Protected business requests are authenticated at the gateway, then routed to the target microservice.
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -182,19 +296,28 @@ sequenceDiagram
     participant LB as Load Balancer
     participant Gateway as Spring Cloud Gateway
     participant Eureka
-    participant Service as Target Microservice
-    participant DB as PostgreSQL
+    participant Identity as Identity & Access Service
+    participant Service as Business Microservice
+    participant DB as Service-Owned PostgreSQL
 
     User->>React: Use ERP screen
     React->>LB: HTTPS API request
     LB->>Gateway: Forward request
-    Gateway->>Gateway: Validate route and token
-    Gateway->>Eureka: Resolve service instances
-    Eureka-->>Gateway: Return available instances
-    Gateway->>Service: Forward request with load balancing
-    Service->>DB: Read/write owned data
-    DB-->>Service: Result
-    Service-->>Gateway: API response
+    Gateway->>Gateway: Match route
+    alt Auth route
+        Gateway->>Identity: Forward login, refresh, or logout request
+        Identity->>DB: Read/write identity data
+        DB-->>Identity: Result
+        Identity-->>Gateway: Auth response
+    else Protected business route
+        Gateway->>Gateway: Validate JWT and broad route permission
+        Gateway->>Eureka: Resolve service instances
+        Eureka-->>Gateway: Return available instances
+        Gateway->>Service: Forward request with load balancing
+        Service->>DB: Read/write owned business data
+        DB-->>Service: Result
+        Service-->>Gateway: API response
+    end
     Gateway-->>React: API response
     React-->>User: Render result
 ```
